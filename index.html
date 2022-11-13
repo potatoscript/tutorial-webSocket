@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="messages"></div>
+    <form action="">
+        <input type="text" placeholder="Your message...">
+    </form>
+    <script>
+        function showMessage(text,isMine=false){
+            document.getElementById('messages').innerHTML += `
+             <div class="message-row ${isMine?'mine':'their'}">
+                <div class="bubble">${text}</div>
+             </div>
+            `;
+        }
+        // connect to the server setting
+        const ws = new WebSocket('ws://localhost:8080');
+        // when someone send the message we want to listen to the message
+        ws.addEventListener('message', ev => {
+            // and display the message with text()
+            /*
+            ev.data.text().then(text =>{
+                showMessage(text,false)
+            })
+            */
+           ev.data.text().then(showMessage);
+        });
+         // trigger the form if someone send the message
+         // by assign our function into the queryselector
+         document.querySelector('form').onsubmit = ev => {
+             ev.preventDefault(); // to prevent the input been submitted at the initial of the form
+             // get the input value inside the selector
+             const input  = document.querySelector('input');
+             ws.send(input.value);
+             // after send the message we want to show the message in the div
+             showMessage(input.value, true); // true because it is our message
+             input.value = '';
+
+         }
+    </script>
+</body>
+</html>
